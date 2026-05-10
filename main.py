@@ -1,3 +1,5 @@
+import os
+
 from tradingagents.graph.trading_graph import TradingAgentsGraph
 from tradingagents.default_config import DEFAULT_CONFIG
 
@@ -5,26 +7,19 @@ from dotenv import find_dotenv, load_dotenv
 
 load_dotenv(find_dotenv(usecwd=True))
 
-# Create a custom config
 config = DEFAULT_CONFIG.copy()
-config["deep_think_llm"] = "gpt-5.4-mini"  # Use a different model
-config["quick_think_llm"] = "gpt-5.4-mini"  # Use a different model
-config["max_debate_rounds"] = 1  # Increase debate rounds
-
-# Configure data vendors (default uses yfinance, no extra API keys needed)
+config["llm_provider"] = os.getenv("LLM_PROVIDER", "openai")
+config["deep_think_llm"] = os.getenv("DEEP_THINK_LLM", "gpt-5.4-mini")
+config["quick_think_llm"] = os.getenv("QUICK_THINK_LLM", "gpt-5.4-mini")
+config["max_debate_rounds"] = int(os.getenv("MAX_DEBATE_ROUNDS", "1"))
 config["data_vendors"] = {
-    "core_stock_apis": "yfinance",           # Options: alpha_vantage, yfinance
-    "technical_indicators": "yfinance",      # Options: alpha_vantage, yfinance
-    "fundamental_data": "yfinance",          # Options: alpha_vantage, yfinance
-    "news_data": "yfinance",                 # Options: alpha_vantage, yfinance
+    "core_stock_apis": os.getenv("CORE_STOCK_APIS", "yfinance"),
+    "technical_indicators": os.getenv("TECHNICAL_INDICATORS", "yfinance"),
+    "fundamental_data": os.getenv("FUNDAMENTAL_DATA", "yfinance"),
+    "news_data": os.getenv("NEWS_DATA", "yfinance"),
 }
 
-# Initialize with custom config
 ta = TradingAgentsGraph(debug=True, config=config)
 
-# forward propagate
 _, decision = ta.propagate("NVDA", "2024-05-10")
 print(decision)
-
-# Memorize mistakes and reflect
-# ta.reflect_and_remember(1000) # parameter is the position returns
